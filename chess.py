@@ -22,6 +22,7 @@ class Board(object):
         self.files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         self.file_idx = dict(zip(self.files, range(len(self.files))))
         self.board = [[EMPTYCELL]*8 for _ in range(8)] 
+        self.pieces = set()
 
     def file_to_idx(self, file):
         return self.file_idx[file]
@@ -35,10 +36,17 @@ class Board(object):
     def set_piece(self, piece):
         """set piece at specified position"""
         self.board[self.file_to_idx(piece.file)][piece.rank-1] = piece
+        self.pieces.add(piece)
 
     def is_empty(self, file, rank):
         """helper function to check if cell is empty"""
         return self.get_piece_at_position(file, rank) == EMPTYCELL
+
+    def clear_board(self):
+        """clear all pieces to create empty board"""
+        self.board = [[EMPTYCELL]*8 for _ in range(8)] 
+        for piece in self.pieces:
+            piece.board = None
 
     def init_pieces(self):
         """Initialize board with pieces at the initial starting position of the game"""
@@ -91,6 +99,9 @@ class King(Piece):
         if isinstance(self, other.__class__):
             return self.color == other.color
         return False
+
+    def __hash__(self):
+        return hash(self.file) ^ hash(self.rank) ^ hash(self.color) ^ hash(KING)
     
 
 class Queen(Piece):
@@ -106,6 +117,9 @@ class Queen(Piece):
         if isinstance(self, other.__class__):
             return self.color == other.color
         return False
+
+    def __hash__(self):
+        return hash(self.file) ^ hash(self.rank) ^ hash(self.color) ^ hash(QUEEN)
 
     
 class Rook(Piece):
@@ -136,12 +150,33 @@ class Rook(Piece):
             return self.color == other.color
         return False
 
+    def __hash__(self):
+        return hash(self.file) ^ hash(self.rank) ^ hash(self.color) ^ hash(ROOK)
+
 
 class Bishop(Piece):
 
     def __init__(self, file, rank, color, board):
         super(Bishop, self).__init__(file, rank, board)
         self.color = color
+
+    def valid_moves(self):
+        moves = set()
+        file_left = list(reversed(self.board.files[:self.board.file_to_idx(self.file)]))
+        file_right = self.board.files[(self.board.file_to_idx(self.file)+1):]
+        rank_bottom = list(range(self.rank-1, 0, -1))
+        rank_top = list(range(self.rank+1, 9))
+        directions = [ zip(file_left, rank_bottom),
+                       zip(file_left, rank_top),
+                       zip(file_right, rank_bottom),
+                       zip(file_right, rank_top)]
+        for direction in directions:
+            for file, rank in direction:
+                if self.board.is_empty(file, rank):
+                    moves.add((file, rank))
+                else:
+                    break
+        return moves
 
     def __str__(self):
         return "\u2657" if self.color == WHITE else "\u265D"
@@ -150,6 +185,9 @@ class Bishop(Piece):
         if isinstance(self, other.__class__):
             return self.color == other.color
         return False
+
+    def __hash__(self):
+        return hash(self.file) ^ hash(self.rank) ^ hash(self.color) ^ hash(BISHOP)
 
 
 class Knight(Piece):
@@ -165,6 +203,9 @@ class Knight(Piece):
         if isinstance(self, other.__class__):
             return self.color == other.color
         return False
+
+    def __hash__(self):
+        return hash(self.file) ^ hash(self.rank) ^ hash(self.color) ^ hash(KNIGHT)
 
 
 class Pawn(Piece):
@@ -196,3 +237,6 @@ class Pawn(Piece):
         if isinstance(self, other.__class__):
             return self.color == other.color
         return False
+
+    def __hash__(self):
+        return hash(self.file) ^ hash(self.rank) ^ hash(self.color) ^ hash(PAWN)

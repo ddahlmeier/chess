@@ -62,13 +62,67 @@ class InitGameTest(unittest.TestCase):
         board.set_piece(pawn)
         self.assertEqual([('a', 6), ('a', 5)],  pawn.valid_moves())
 
-    def test_white_rook_can_move(self):
+    def test_rook_can_move(self):
+        board = chess.Board()
+        rook_white = chess.Rook('d', 4, chess.WHITE, board)
+        true_moves = set([('a', 4), ('b', 4), ('c', 4), ('e', 4), ('f', 4), \
+                              ('g', 4), ('h', 4), ('d', 1), ('d', 2), ('d', 3), \
+                              ('d', 5), ('d', 6), ('d', 7), ('d', 8)])
+        board.set_piece(rook_white)
+        self.assertEqual(true_moves, rook_white.valid_moves())
+        rook_black = chess.Rook('d', 4, chess.BLACK, board)
+        board.set_piece(rook_black)
+        self.assertEqual(true_moves, rook_black.valid_moves())
+
+    def test_rook_canot_move_through_other_pieces(self):
         board = chess.Board()
         rook = chess.Rook('d', 4, chess.WHITE, board)
         board.set_piece(rook)
         self.assertEqual(set([('a', 4), ('b', 4), ('c', 4), ('e', 4), ('f', 4), \
                               ('g', 4), ('h', 4), ('d', 1), ('d', 2), ('d', 3), \
-                              ('d', 5), ('d', 6), ('d', 7), ('d', 8)]),  rook.valid_moves())
+                              ('d', 5), ('d', 6), ('d', 7), ('d', 8)]), rook.valid_moves())
+        board.set_piece(chess.Rook('d', 5, chess.WHITE, board))
+        self.assertEqual(set([('a', 4), ('b', 4), ('c', 4), ('e', 4), ('f', 4), \
+                                  ('g', 4), ('h', 4), ('d', 1), ('d', 2), ('d', 3)]), \
+                             rook.valid_moves())
+        board.set_piece(chess.Rook('d', 3, chess.WHITE, board))
+        self.assertEqual(set([('a', 4), ('b', 4), ('c', 4), ('e', 4), ('f', 4), \
+                                  ('g', 4), ('h', 4)]), \
+                             rook.valid_moves())
+        board.set_piece(chess.Rook('c', 4, chess.WHITE, board))
+        self.assertEqual(set([('e', 4), ('f', 4), ('g', 4), ('h', 4)]), \
+                             rook.valid_moves())
+        board.set_piece(chess.Rook('e', 4, chess.WHITE, board))
+        self.assertEqual(set(), rook.valid_moves())
+
+    def test_bishop_can_move(self):
+        board = chess.Board()
+        bishop_white = chess.Bishop('d', 4, chess.WHITE, board)
+        true_moves = set([('a', 7), ('b', 6), ('c', 5), ('e', 3), ('f', 2), ('g', 1), \
+                              ('a', 1), ('b', 2), ('c', 3), ('e', 5), ('f', 6), ('g', 7), ('h', 8)])
+        board.set_piece(bishop_white)
+        self.assertEqual(true_moves, bishop_white.valid_moves())
+        bishop_black = chess.Bishop('d', 4, chess.BLACK, board)
+        board.set_piece(bishop_black)
+        self.assertEqual(true_moves, bishop_black.valid_moves())
+
+    def test_bishop_canot_move_through_other_pieces(self):
+        board = chess.Board()
+        bishop = chess.Bishop('d', 4, chess.WHITE, board)
+        board.set_piece(bishop)
+        self.assertEqual(set([('a', 7), ('b', 6), ('c', 5), ('e', 3), ('f', 2), ('g', 1), \
+                              ('a', 1), ('b', 2), ('c', 3), ('e', 5), ('f', 6), ('g', 7), \
+                                  ('h', 8)]), bishop.valid_moves())
+        board.set_piece(chess.Bishop('c', 3, chess.WHITE, board))
+        self.assertEqual(set([('a', 7), ('b', 6), ('c', 5), ('e', 3), ('f', 2), ('g', 1), \
+                                  ('e', 5), ('f', 6), ('g', 7), ('h', 8)]), bishop.valid_moves())
+        board.set_piece(chess.Bishop('c', 5, chess.WHITE, board))
+        self.assertEqual(set([('e', 3), ('f', 2), ('g', 1), \
+                                 ('e', 5), ('f', 6), ('g', 7), ('h', 8)]), bishop.valid_moves())
+        board.set_piece(chess.Bishop('e', 5, chess.WHITE, board))
+        self.assertEqual(set([('e', 3), ('f', 2), ('g', 1)]), bishop.valid_moves())
+        board.set_piece(chess.Bishop('e', 3, chess.WHITE, board))
+        self.assertEqual(set(), bishop.valid_moves())
 
 if __name__ == '__main__':
     unittest.main()
