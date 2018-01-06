@@ -39,14 +39,12 @@ class InitGameTest(unittest.TestCase):
 
     def test_white_pawn_can_move_forward_by_one(self):
         board = chess.Board()
-        board.init_pieces()
         pawn = chess.Pawn('a', 3, chess.WHITE, board)
         board.set_piece(pawn)
         self.assertEqual([('a', 4)],  pawn.valid_moves())
         
     def test_black_pawn_can_move_forward_by_one(self):
         board = chess.Board()
-        board.init_pieces()
         pawn = chess.Pawn('a', 6, chess.BLACK, board)
         board.set_piece(pawn)
         self.assertEqual([('a', 5)],  pawn.valid_moves())
@@ -60,10 +58,17 @@ class InitGameTest(unittest.TestCase):
         
     def test_black_pawn_can_move_forward_by_one_or_two(self):
         board = chess.Board()
-        board.init_pieces()
         pawn = chess.Pawn('a', 7, chess.BLACK, board)
         board.set_piece(pawn)
         self.assertEqual([('a', 6), ('a', 5)],  pawn.valid_moves())
+
+    def test_white_rook_can_move(self):
+        board = chess.Board()
+        rook = chess.Rook('d', 4, chess.WHITE, board)
+        board.set_piece(rook)
+        self.assertEqual(set([('a', 4), ('b', 4), ('c', 4), ('e', 4), ('f', 4), \
+                              ('g', 4), ('h', 4), ('d', 1), ('d', 2), ('d', 3), \
+                              ('d', 5), ('d', 6), ('d', 7), ('d', 8)]),  rook.valid_moves())
 
 if __name__ == '__main__':
     unittest.main()

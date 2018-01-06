@@ -114,6 +114,20 @@ class Rook(Piece):
         super(Rook, self).__init__(file, rank, board)
         self.color = color
 
+    def valid_moves(self):
+        moves = set()
+        directions = [[(self.file, rank) for rank in range(self.rank-1, 0, -1)],
+                      [(self.file, rank) for rank in range(self.rank+1, 9)],
+                      [(file, self.rank) for file in self.board.files[(self.board.file_to_idx(self.file)+1):]],
+                      [(file, self.rank) for file in reversed(self.board.files[:self.board.file_to_idx(self.file)])]]
+        for direction in directions:
+            for file, rank in direction:
+                if self.board.is_empty(file, rank):
+                    moves.add((file, rank))
+                else:
+                    break
+        return moves
+
     def __str__(self):
         return "\u2656" if self.color == WHITE else "\u265C"
 
