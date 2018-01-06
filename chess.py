@@ -32,30 +32,36 @@ class Board(object):
             raise ValueError("Invalid board position %s %d" % (file, rank))
         return self.board[self.file_to_idx(file)][rank-1]
 
-    def set_piece_at_position(self, file, rank, piece):
+    def set_piece(self, piece):
         """set piece at specified position"""
-        if file not in self.files or rank not in self.ranks:
-            raise ValueError("Invalid board position %s %d" % (file, rank))
-        self.board[self.file_to_idx(file)][rank-1] = piece
+        self.board[self.file_to_idx(piece.file)][piece.rank-1] = piece
+
+    def is_empty(self, file, rank):
+        """helper function to check if cell is empty"""
+        return self.get_piece_at_position(file, rank) == EMPTYCELL
 
     def init_pieces(self):
         """Initialize board with pieces at the initial starting position of the game"""
         for file, rank in [('a',1), ('a', 8), ('h', 1), ('h', 8)]:
-            self.set_piece_at_position(file, rank, Rook(WHITE) if rank == 1 else Rook(BLACK))
+            self.set_piece(Rook(file, rank, WHITE, self) if rank == 1 else Rook(file, rank, BLACK, self))
         for file, rank in [('b',1), ('b', 8), ('g', 1), ('g', 8)]:
-            self.set_piece_at_position(file, rank, Knight(WHITE) if rank == 1 else Knight(BLACK))
+            self.set_piece(Knight(file, rank, WHITE, self) if rank == 1 else Knight(file, rank, BLACK, self))
         for file, rank in [('c',1), ('c', 8), ('f', 1), ('f', 8)]:
-            self.set_piece_at_position(file, rank, Bishop(WHITE) if rank == 1 else Bishop(BLACK))
+            self.set_piece(Bishop(file, rank, WHITE, self) if rank == 1 else Bishop(file, rank, BLACK, self))
         for file, rank in itertools.product(self.files, [2, 7]):
-            self.set_piece_at_position(file, rank, Pawn(WHITE) if rank == 2 else Pawn(BLACK))
-        self.set_piece_at_position('d', 1, Queen(WHITE))
-        self.set_piece_at_position('d', 8, Queen(BLACK))
-        self.set_piece_at_position('e', 1, King(WHITE))
-        self.set_piece_at_position('e', 8, King(BLACK))
+            self.set_piece(Pawn(file, rank, WHITE, self) if rank == 2 else Pawn(file, rank, BLACK, self))
+        self.set_piece(Queen('d', 1, WHITE, self))
+        self.set_piece(Queen('d', 8, BLACK, self))
+        self.set_piece(King('e', 1, WHITE, self))
+        self.set_piece(King('e', 8, BLACK, self))
 
     def __str__(self):
-        return '\n'.join([''.join(['{:2}'.format(str(self.get_piece_at_position(file, rank))) 
-                                   for file in self.files]) for rank in self.ranks])
+        return '  ' + ''.join(['{:2}'.format(file) for file in self.files]) + '\n' +  \
+            '\n'.join([ '{:2}'.format(rank) + 
+                        ''.join(['{:2}'.format(str(self.get_piece_at_position(file, rank))) for file in self.files]) 
+                        + '{:2}'.format(rank) 
+                        for rank in reversed(self.ranks)]) + \
+                        '\n  ' + ''.join(['{:2}'.format(file) for file in self.files])
 
 
 class Piece(object):
@@ -63,19 +69,25 @@ class Piece(object):
     Class representing a chess piece
     """
     
-    def __init__(self, color):
-        self.color = color
+    def __init__(self, file, rank, board):
+        if file not in board.files or rank not in board.ranks:
+            raise ValueError("Invalid board position %s %d" % (file, rank))
+        self.file = file
+        self.rank = rank
+        self.board = board
 
 
 class King(Piece):
 
-    def __init__(self, color):
+    def __init__(self, file, rank, color, board):
+        super(King, self).__init__(file, rank, board)
         self.color = color
 
     def __str__(self):
         return "\u2654" if self.color == WHITE else "\u265A"
 
     def __eq__(self, other):
+        # TODO: are pieces only equal when their positon is equal?
         if isinstance(self, other.__class__):
             return self.color == other.color
         return False
@@ -83,7 +95,8 @@ class King(Piece):
 
 class Queen(Piece):
 
-    def __init__(self, color):
+    def __init__(self, file, rank, color, board):
+        super(Queen, self).__init__(file, rank, board)
         self.color = color
 
     def __str__(self):
@@ -97,7 +110,8 @@ class Queen(Piece):
     
 class Rook(Piece):
 
-    def __init__(self, color):
+    def __init__(self, file, rank, color, board):
+        super(Rook, self).__init__(file, rank, board)
         self.color = color
 
     def __str__(self):
@@ -111,7 +125,8 @@ class Rook(Piece):
 
 class Bishop(Piece):
 
-    def __init__(self, color):
+    def __init__(self, file, rank, color, board):
+        super(Bishop, self).__init__(file, rank, board)
         self.color = color
 
     def __str__(self):
@@ -125,7 +140,8 @@ class Bishop(Piece):
 
 class Knight(Piece):
 
-    def __init__(self, color):
+    def __init__(self, file, rank, color, board):
+        super(Knight, self).__init__(file, rank, board)
         self.color = color
 
     def __str__(self):
@@ -139,8 +155,25 @@ class Knight(Piece):
 
 class Pawn(Piece):
 
-    def __init__(self, color):
+    def __init__(self, file, rank, color, board):
+        super(Pawn, self).__init__(file, rank, board)
         self.color = color
+
+    def valid_moves(self):
+        moves = []
+        if self.color == WHITE:
+            if self.board.is_empty(self.file, self.rank+1):
+                moves.append((self.file, self.rank+1))
+                if self.rank == 2 and self.board.is_empty(self.file, self.rank+2):
+                    moves.append((self.file, self.rank+2))
+        elif self.color == BLACK:
+            if self.board.is_empty(self.file, self.rank-1):
+                moves.append((self.file, self.rank-1))
+                if self.rank == 7 and self.board.is_empty(self.file, self.rank-2):
+                    moves.append((self.file, self.rank-2))
+        else:
+            assert False
+        return moves
 
     def __str__(self):
         return "\u2659" if self.color == WHITE else "\u265F"
