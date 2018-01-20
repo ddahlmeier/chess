@@ -91,6 +91,20 @@ class King(Piece):
         super(King, self).__init__(file, rank, board)
         self.color = color
 
+    def valid_moves(self):
+        moves = set()
+        for file_move, rank_move in [(1,-1), (1,0), (1,1), (0,-1), (0,1), (-1,-1),(-1,0), (-1,1)]: 
+            target_file = self.board.file_to_idx(self.file)+file_move
+            if target_file < 1 or target_file > 8:
+                continue
+            target_file = self.board.files[target_file]
+            target_rank = self.rank + rank_move
+            if target_rank not in self.board.ranks:
+                continue
+            if self.board.is_empty(target_file, target_rank):
+                moves.add((target_file, target_rank))
+        return moves
+
     def __str__(self):
         return "\u2654" if self.color == WHITE else "\u265A"
 
@@ -109,6 +123,36 @@ class Queen(Piece):
     def __init__(self, file, rank, color, board):
         super(Queen, self).__init__(file, rank, board)
         self.color = color
+
+    def valid_moves(self):
+        moves = set()
+        # horizontal and vertical moves
+        directions = [[(self.file, rank) for rank in range(self.rank-1, 0, -1)],
+                      [(self.file, rank) for rank in range(self.rank+1, 9)],
+                      [(file, self.rank) for file in self.board.files[(self.board.file_to_idx(self.file)+1):]],
+                      [(file, self.rank) for file in reversed(self.board.files[:self.board.file_to_idx(self.file)])]]
+        for direction in directions:
+            for file, rank in direction:
+                if self.board.is_empty(file, rank):
+                    moves.add((file, rank))
+                else:
+                    break
+        # diagonal moves
+        file_left = list(reversed(self.board.files[:self.board.file_to_idx(self.file)]))
+        file_right = self.board.files[(self.board.file_to_idx(self.file)+1):]
+        rank_bottom = list(range(self.rank-1, 0, -1))
+        rank_top = list(range(self.rank+1, 9))
+        directions = [ zip(file_left, rank_bottom),
+                       zip(file_left, rank_top),
+                       zip(file_right, rank_bottom),
+                       zip(file_right, rank_top)]
+        for direction in directions:
+            for file, rank in direction:
+                if self.board.is_empty(file, rank):
+                    moves.add((file, rank))
+                else:
+                    break
+        return moves
 
     def __str__(self):
         return "\u2655" if self.color == WHITE else "\u265B"
@@ -195,6 +239,20 @@ class Knight(Piece):
     def __init__(self, file, rank, color, board):
         super(Knight, self).__init__(file, rank, board)
         self.color = color
+
+    def valid_moves(self):
+        moves = set()
+        for file_move, rank_move in [(1,-2), (1,2), (-1,-2), (-1,2), (2,-1), (2,1),(-1,2), (-2,1), (-2,-1)]: 
+            target_file = self.board.file_to_idx(self.file)+file_move
+            if target_file < 1 or target_file > 8:
+                continue
+            target_file = self.board.files[target_file]
+            target_rank = self.rank + rank_move
+            if target_rank not in self.board.ranks:
+                continue
+            if self.board.is_empty(target_file, target_rank):
+                moves.add((target_file, target_rank))
+        return moves
 
     def __str__(self):
         return "\u2658" if self.color == WHITE else "\u265E"

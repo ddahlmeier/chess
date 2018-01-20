@@ -124,6 +124,54 @@ class InitGameTest(unittest.TestCase):
         board.set_piece(chess.Bishop('e', 3, chess.WHITE, board))
         self.assertEqual(set(), bishop.valid_moves())
 
+    def test_knight_can_move(self):
+        board = chess.Board()
+        knight_white = chess.Knight('d', 4, chess.WHITE, board)
+        true_moves = set([('e', 6), ('f', 5), ('f', 3), ('e', 2), ('c', 2), ('b', 3), ('b', 5), ('c', 6)])
+        board.set_piece(knight_white)
+        self.assertEqual(true_moves, knight_white.valid_moves())
+        knight_black = chess.Knight('d', 4, chess.BLACK, board)
+        board.set_piece(knight_black)
+        self.assertEqual(true_moves, knight_black.valid_moves())
+
+    def test_knight_cannot_move_to_occupied_cell(self):
+        board = chess.Board()
+        knight_white = chess.Knight('d', 4, chess.WHITE, board)
+        pawn_white = chess.Pawn('c', 6, chess.WHITE, board)
+        true_moves = set([('e', 6), ('f', 5), ('f', 3), ('e', 2), ('c', 2), ('b', 3), ('b', 5)])
+        board.set_piece(knight_white)
+        board.set_piece(pawn_white)
+        self.assertEqual(true_moves, knight_white.valid_moves())
+
+    def test_queen_can_move(self):
+        board = chess.Board()
+        queen_white = chess.Queen('d', 4, chess.WHITE, board)
+        rook_moves = set([('a', 4), ('b', 4), ('c', 4), ('e', 4), ('f', 4), \
+                              ('g', 4), ('h', 4), ('d', 1), ('d', 2), ('d', 3), \
+                              ('d', 5), ('d', 6), ('d', 7), ('d', 8)])
+        bishop_moves = set([('a', 7), ('b', 6), ('c', 5), ('e', 3), ('f', 2), ('g', 1), \
+                              ('a', 1), ('b', 2), ('c', 3), ('e', 5), ('f', 6), ('g', 7), ('h', 8)])
+        true_moves = rook_moves.union(bishop_moves)
+        board.set_piece(queen_white)
+        self.assertEqual(true_moves, queen_white.valid_moves())
+
+    def test_king_can_move(self):
+        board = chess.Board()
+        king_white = chess.King('d', 4, chess.WHITE, board)
+        true_moves = set([('d',3), ('d',5), ('c',4), ('e',4), ('c',3), ('c',5), ('e',3), ('e',5)]) 
+        board.set_piece(king_white)
+        self.assertEqual(true_moves, king_white.valid_moves())
+
+    def test_king_cannot_move_to_occupied_cell(self):
+        board = chess.Board()
+        king_white = chess.King('d', 4, chess.WHITE, board)
+        pawn_white = chess.Pawn('d', 3, chess.WHITE, board)
+        true_moves = set([('d',5), ('c',4), ('e',4), ('c',3), ('c',5), ('e',3), ('e',5)]) 
+        board.set_piece(king_white)
+        board.set_piece(pawn_white)
+        self.assertEqual(true_moves, king_white.valid_moves())
+
+
 if __name__ == '__main__':
     unittest.main()
 
